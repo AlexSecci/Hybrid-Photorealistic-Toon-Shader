@@ -38,7 +38,7 @@ public:
     Renderer(unsigned int width, unsigned int height);
     ~Renderer();
 
-    void render(const Camera& camera);
+    void render(const Camera& camera, float deltaTime);
     
     void updateLights(float deltaTime); 
     

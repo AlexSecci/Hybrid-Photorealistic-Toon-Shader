@@ -46,7 +46,7 @@ Renderer::~Renderer()
     cleanup();
 }
 
-void Renderer::render(const Camera& camera)
+void Renderer::render(const Camera& camera, float deltaTime)
 {
     // Reset frame stats.
     resetStats();
@@ -56,7 +56,7 @@ void Renderer::render(const Camera& camera)
     updateShadowMaps();
     
     // Update for flickering.
-    updateLights(0.016f);
+    updateLights(deltaTime);
     
     // 2. Shadow Map Pass - render depth from each light perspective
     shadowMapPass();

@@ -9,6 +9,12 @@
 #include "camera/Camera.h"
 #include "ui/GUI.h"
 
+// Force usage of discrete GPU on laptops with hybrid graphics
+extern "C" {
+    __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+    __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
 const unsigned int WINDOW_WIDTH = 1920;
 const unsigned int WINDOW_HEIGHT = 1080;
 
@@ -95,7 +101,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Execute the rendering pipeline.
-        renderer->render(camera);
+        renderer->render(camera, deltaTime);
         
         // Render the UI overlay on top of the 3D scene.
         gui->render();
