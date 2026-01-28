@@ -85,6 +85,9 @@ int main()
     auto gui = std::make_unique<GUI>(window);
     gui->setRenderer(renderer.get());
     gui->setCamera(&camera);
+    
+    // Load default preset (Preset 1)
+    renderer->loadPreset(0);
 
     // Main Loop
     while (!glfwWindowShouldClose(window)) {
