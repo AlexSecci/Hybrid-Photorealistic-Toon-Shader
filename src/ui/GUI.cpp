@@ -305,6 +305,10 @@ void GUI::renderGlobalParamsWindow()
     int edgeFlags = renderer->getEdgeDetectionFlags();
 
     // Toon shading parameters.
+    if (ImGui::Checkbox("Crazy Mode", &renderer->isCrazyMode)) {
+        renderer->setCrazyMode(renderer->isCrazyMode);
+    }
+    
     ImGui::Checkbox("Enable Toon Shading", &globalParams.enableQuantization);
 
     if (globalParams.enableQuantization) {

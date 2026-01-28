@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <random>
+
 const size_t Renderer::MAX_SHADOW_CASTING_LIGHTS;
 
 Renderer::Renderer(unsigned int width, unsigned int height) 
@@ -57,6 +59,7 @@ void Renderer::render(const Camera& camera, float deltaTime)
     
     // Update for flickering.
     updateLights(deltaTime);
+    updateCrazyTorches(deltaTime);
     
     // 2. Shadow Map Pass - render depth from each light perspective
     shadowMapPass();
@@ -481,9 +484,11 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
         
         // Add a torch to the first wall segment
         if (i == 0) {
-            glm::mat4 t = glm::mat4(1.0f);
-            t = glm::translate(t, pos + glm::vec3(0.0f, 2.3f, 0.4f)); 
-            renderModel(torchModel, t, shader);
+            if (!isCrazyMode) {
+                glm::mat4 t = glm::mat4(1.0f);
+                t = glm::translate(t, pos + glm::vec3(0.0f, 2.3f, 0.4f)); 
+                renderModel(torchModel, t, shader);
+            }
         }
     }
     
@@ -519,7 +524,7 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
         if (i == 0) {
             glm::mat4 t = m;
             t = glm::translate(t, glm::vec3(0.0f, 2.3f, 0.4f)); 
-            renderModel(torchModel, t, shader);
+            if (!isCrazyMode) renderModel(torchModel, t, shader);
         }
     }
     
@@ -539,7 +544,7 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
         if (i == 3) {
              glm::mat4 t = m;
              t = glm::translate(t, glm::vec3(0.0f, 2.3f, 0.4f));
-             renderModel(torchModel, t, shader);
+             if (!isCrazyMode) renderModel(torchModel, t, shader);
         }
     }
     
@@ -679,7 +684,7 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
     {
             glm::mat4 t = glm::mat4(1.0f);
             t = glm::translate(t, glm::vec3(-9.6f, 1.3f, 6.0f)); 
-            renderModel(torchModel, t, shader);
+            if (!isCrazyMode) renderModel(torchModel, t, shader);
     }
     {
             glm::vec3 pos(-2.0f, floor2Y, 6.0f);
@@ -689,7 +694,8 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
             
             glm::mat4 t = m;
             t = glm::translate(t, glm::vec3(0.0f, 2.3f, 0.4f));
-            renderModel(torchModel, t, shader);
+            if (!isCrazyMode) renderModel(torchModel, t, shader);
+            renderModel(torchModel, t, shader); 
     }
 
     // Terrain outside building (procedural-ish)
@@ -732,6 +738,22 @@ void Renderer::renderScene(Shader* shader, const glm::mat4& viewProjection)
     }
     
     renderDecorations(shader);
+
+    // Render Crazy Torches
+    if (isCrazyMode) {
+        for (const auto& params : crazyTorchParams) {
+             // Find the light to get current pos
+             if (params.lightIndex < lightManager->getLights().size()) {
+                 const auto& light = lightManager->getLights()[params.lightIndex];
+                 
+                 glm::mat4 t = glm::mat4(1.0f);
+                 // Center the model on the light.
+                 t = glm::translate(t, light.position);
+                 t = glm::translate(t, glm::vec3(0.0f, -1.9f, 0.0f));
+                 renderModel(torchModel, t, shader);
+             }
+        }
+    }
 }
 
 // Helpers for fullscreen post-processing.
@@ -881,10 +903,12 @@ void Renderer::geometryPass(const Camera& camera)
             }
             
             if (i == 0) {
-                setModelMaterial(torchMaterial);
-                glm::mat4 t = glm::mat4(1.0f);
-                t = glm::translate(t, pos + glm::vec3(0.0f, 2.3f, 0.4f)); 
-                renderModel(torchModel, t, geometryShader.get());
+                if (!isCrazyMode) {
+                    setModelMaterial(torchMaterial);
+                    glm::mat4 t = glm::mat4(1.0f);
+                    t = glm::translate(t, pos + glm::vec3(0.0f, 2.3f, 0.4f)); 
+                    renderModel(torchModel, t, geometryShader.get());
+                }
             }
         }
         
@@ -921,10 +945,12 @@ void Renderer::geometryPass(const Camera& camera)
             }
             
             if (i == 0) {
-                setModelMaterial(torchMaterial);
-                glm::mat4 t = m;
-                t = glm::translate(t, glm::vec3(0.0f, 2.3f, 0.4f)); 
-                renderModel(torchModel, t, geometryShader.get());
+                if (!isCrazyMode) {
+                    setModelMaterial(torchMaterial);
+                    glm::mat4 t = m;
+                    t = glm::translate(t, glm::vec3(0.0f, 2.3f, 0.4f)); 
+                    renderModel(torchModel, t, geometryShader.get());
+                }
             }
         }
         
@@ -1067,7 +1093,7 @@ void Renderer::geometryPass(const Camera& camera)
              glm::mat4 t = glm::mat4(1.0f);
              t = glm::translate(t, glm::vec3(-9.6f, 1.3f, 6.0f)); 
              setModelMaterial(torchMaterial);
-             renderModel(torchModel, t, geometryShader.get());
+             if (!isCrazyMode) renderModel(torchModel, t, geometryShader.get());
         }
         
         {
@@ -1118,6 +1144,34 @@ void Renderer::geometryPass(const Camera& camera)
             renderModel(cornerModel, m, geometryShader.get());
         }
         renderDecorations(geometryShader.get());
+
+        if (isCrazyMode) {
+            setModelMaterial(torchMaterial);
+            for (const auto& params : crazyTorchParams) {
+                 if (params.lightIndex < lightManager->getLights().size()) {
+                     const auto& light = lightManager->getLights()[params.lightIndex];
+                     
+                     glm::mat4 t = glm::mat4(1.0f);
+                     t = glm::translate(t, light.position);
+                     t = glm::translate(t, glm::vec3(0.0f, -1.9f, 0.0f));
+                     renderModel(torchModel, t, geometryShader.get());
+                 }
+            }
+        }
+        
+        if (isCrazyMode) {
+            setModelMaterial(torchMaterial);
+            for (const auto& params : crazyTorchParams) {
+                 if (params.lightIndex < lightManager->getLights().size()) {
+                     const auto& light = lightManager->getLights()[params.lightIndex];
+                     
+                     glm::mat4 t = glm::mat4(1.0f);
+                     t = glm::translate(t, light.position);
+                     t = glm::translate(t, glm::vec3(0.0f, -1.9f, 0.0f));
+                     renderModel(torchModel, t, geometryShader.get());
+                 }
+            }
+        }
     }
     
     gBuffer->unbind();
@@ -2287,4 +2341,95 @@ glm::mat4 Renderer::calculateLightSpaceMatrix(const Light& light) const
     }
     
     return lightProjection * lightView;
+}
+
+void Renderer::setCrazyMode(bool enable)
+{
+    isCrazyMode = enable;
+    
+    if (isCrazyMode) {
+        // Initialize Crazy Parameters
+        crazyTorchParams.clear();
+        
+        auto& lights = lightManager->getLightsReference();
+        int colorIndex = 0;
+        
+        // Colors: Cyan, Magenta, Yellow, Green
+        std::vector<glm::vec3> colors = {
+            glm::vec3(0.0f, 1.0f, 1.0f), // Cyan
+            glm::vec3(1.0f, 0.0f, 1.0f), // Magenta
+            glm::vec3(1.0f, 1.0f, 0.0f), // Yellow
+            glm::vec3(0.0f, 1.0f, 0.0f), // Green
+        };
+        
+        // Random number generator
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<float> disSpeed(1.0f, 3.0f);
+        std::uniform_real_distribution<float> disRadius(2.0f, 8.5f);
+        std::uniform_real_distribution<float> disAngle(0.0f, 6.28f);
+        std::uniform_real_distribution<float> disOffset(-0.5f, 0.5f);
+        
+        for (size_t i = 0; i < lights.size(); ++i) {
+            if (lights[i].type == LightType::POINT && lights[i].position.y < 4.0f) {
+                
+                CrazyTorchParams params;
+                params.lightIndex = i;
+                params.speed = disSpeed(gen) * (std::rand() % 2 == 0 ? 1.0f : -1.0f); // Random direction
+                params.radius = disRadius(gen);
+                params.angle = disAngle(gen);
+                params.centerOffset = glm::vec3(disOffset(gen), 0.0f, disOffset(gen)); // +/- 0.5 offset from center 0,0
+                params.color = colors[colorIndex % colors.size()];
+                
+                crazyTorchParams.push_back(params);
+                
+                // Set initial crazy state
+                lights[i].isStatic = false; // Must be dynamic now
+                lights[i].color = params.color;
+                
+                colorIndex++;
+            }
+        }
+        
+    } else {
+        // Reset Logic
+        crazyTorchParams.clear();
+        initializeLights(); // Restore original positions and colors
+    }
+}
+
+void Renderer::updateCrazyTorches(float deltaTime)
+{
+    if (!isCrazyMode) return;
+    
+    crazyModeTime += deltaTime;
+
+    auto& lights = lightManager->getLightsReference();
+    
+    for (auto& params : crazyTorchParams) {
+        if (params.lightIndex >= lights.size()) continue;
+        
+        auto& light = lights[params.lightIndex];
+        
+        // precise rotation based on accumulated frames in params
+        params.angle += params.speed * deltaTime;
+        
+        // Circle around (0,0) + offset
+        float x = cos(params.angle) * params.radius + params.centerOffset.x;
+        float z = sin(params.angle) * params.radius + params.centerOffset.z;
+        float y = 1.9f; 
+        
+        light.position = glm::vec3(x, y, z);
+        
+        light.flicker = false;
+        
+        // Time based flickering (0.5 to 2.5)
+        float t = crazyModeTime;
+        float offset = (float)params.lightIndex;
+        float noise = sin(t * 10.0f + offset) + sin(t * 23.0f + offset * 2.0f) * 0.5f + sin(t * 5.0f + offset * 0.5f) * 0.25f;
+        
+        light.intensity = glm::clamp(1.5f + (noise * 0.6f), 0.5f, 2.5f);
+        
+        light.color = params.color;
+    }
 }

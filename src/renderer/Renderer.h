@@ -156,6 +156,24 @@ public:
         float farPlane = 50.0f;             
     } shadowParams;
 
+    // Crazy Mode
+    bool isCrazyMode = false;
+    
+    struct CrazyTorchParams {
+        float speed;
+        float radius;
+        float angle;
+        glm::vec3 centerOffset;
+        glm::vec3 color;
+        size_t lightIndex;
+    };
+    std::vector<CrazyTorchParams> crazyTorchParams;
+    
+    void setCrazyMode(bool enable);
+    void updateCrazyTorches(float deltaTime);
+
+    float crazyModeTime = 0.0f;
+
     LightManager& getLightManager() { return *lightManager; }
 
 private:
