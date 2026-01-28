@@ -1,0 +1,36 @@
+28-01-2026, 19:20:14 CelShadingRenderer.exe benchmark completed, 5533 frames rendered in 33.578 s
+                     Average framerate  :  164.7 FPS
+                     Minimum framerate  :  164.6 FPS
+                     Maximum framerate  :  164.8 FPS
+                     1% low framerate   :  154.0 FPS
+                     0.1% low framerate :  150.6 FPS
+28-01-2026, 19:30:18 CelShadingRenderer.exe benchmark completed, 3096 frames rendered in 35.719 s
+                     Average framerate  :   86.6 FPS
+                     Minimum framerate  :   67.1 FPS
+                     Maximum framerate  :  108.7 FPS
+                     1% low framerate   :   63.6 FPS
+                     0.1% low framerate :   61.4 FPS
+28-01-2026, 19:33:55 CelShadingRenderer.exe benchmark completed, 2821 frames rendered in 32.047 s
+                     Average framerate  :   88.0 FPS
+                     Minimum framerate  :   64.1 FPS
+                     Maximum framerate  :  104.9 FPS
+                     1% low framerate   :   63.5 FPS
+                     0.1% low framerate :   59.6 FPS
+28-01-2026, 19:40:13 CelShadingRenderer.exe benchmark completed, 1876 frames rendered in 26.359 s
+                     Average framerate  :   71.1 FPS
+                     Minimum framerate  :   61.4 FPS
+                     Maximum framerate  :   93.9 FPS
+                     1% low framerate   :   58.4 FPS
+                     0.1% low framerate :   48.3 FPS
+28-01-2026, 19:42:03 CelShadingRenderer.exe benchmark completed, 242 frames rendered in 23.875 s
+                     Average framerate  :   10.1 FPS
+                     Minimum framerate  :    9.4 FPS
+                     Maximum framerate  :   11.0 FPS
+                     1% low framerate   :    9.1 FPS
+                     0.1% low framerate :    9.0 FPS
+28-01-2026, 19:43:36 CelShadingRenderer.exe benchmark completed, 484 frames rendered in 24.969 s
+                     Average framerate  :   19.3 FPS
+                     Minimum framerate  :   18.2 FPS
+                     Maximum framerate  :   20.2 FPS
+                     1% low framerate   :   17.9 FPS
+                     0.1% low framerate :   17.5 FPS

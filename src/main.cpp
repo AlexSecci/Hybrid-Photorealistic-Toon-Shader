@@ -10,6 +10,7 @@
 #include "ui/GUI.h"
 
 // Force usage of discrete GPU on laptops with hybrid graphics
+
 extern "C" {
     __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
     __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
@@ -45,7 +46,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);  // TODO: right now window is 1920x1080 fixed
+    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+    glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
 #ifdef __APPLE__
     // Required for macOS, idk why but dont ever remove it.
@@ -84,6 +86,9 @@ int main()
     auto renderer = std::make_unique<Renderer>(WINDOW_WIDTH, WINDOW_HEIGHT);
     auto gui = std::make_unique<GUI>(window);
     gui->setRenderer(renderer.get());
+    
+    // Store renderer pointer for callbacks
+    glfwSetWindowUserPointer(window, renderer.get());
     gui->setCamera(&camera);
     
     // Load default preset (Preset 1)
@@ -167,9 +172,14 @@ void processInput(GLFWwindow* window)
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // Update the OpenGL viewport matches the new window dimensions.
-    // This maps the normalized device coordinates (-1 to 1) to screen coordinates.
+    // Update the OpenGL viewport
     glViewport(0, 0, width, height);
+
+    // Retrieve the renderer validation and update its internal size
+    Renderer* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    if (renderer) {
+        renderer->resize(width, height);
+    }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
